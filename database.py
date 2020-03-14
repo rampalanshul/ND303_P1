@@ -1,3 +1,4 @@
+import csv
 from models import OrbitPath, NearEarthObject
 
 
@@ -14,8 +15,12 @@ class NEODatabase(object):
         """
         :param filename: str representing the pathway of the filename containing the Near Earth Object data
         """
-        # TODO: What data structures will be needed to store the NearEarthObjects and OrbitPaths?
-        # TODO: Add relevant instance variables for this.
+        # Preferred data structure to store the NearEarthObjects and OrbitPaths  is the dictionary
+        # Instance variables.
+
+        self.filename = filename
+        self.neo_name = {}
+        self.neo_date = {}
 
     def load_data(self, filename=None):
         """
@@ -32,7 +37,25 @@ class NEODatabase(object):
 
         filename = filename or self.filename
 
-        # TODO: Load data from csv file.
-        # TODO: Where will the data be stored?
+        # Load data from csv file and Store it.
+
+        open_file = open(filename, 'r')
+
+        data = csv.DictReader(open_file)
+
+        for row in data:
+            orbit_path = OrbitPath(**row)
+
+            if not self.neo_name.get(row['name'], None):
+                self.neo_name[row['name']] = NearEarthObject(**row)
+
+            near_earth_object = self.neo_name.get(row['name'], None)
+
+            near_earth_object.update_orbits(orbit_path)
+
+            if not self.neo_date.get(row['close_approach_date'], None):
+                self.neo_date[row['close_approach_date']] = []
+
+            self.neo_date[row['close_approach_date']].append(near_earth_object)
 
         return None
